@@ -1,0 +1,6 @@
+FROM openjdk:8-jdk-slim
+
+COPY ./admin-1.0-SNAPSHOT.jar /
+COPY ./config   /config
+COPY ./start.sh /
+ENTRYPOINT [ "/bin/sh", "/start.sh", "start", "uat" ]

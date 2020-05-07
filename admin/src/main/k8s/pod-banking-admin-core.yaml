@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: banking
+  name: banking-admin-core
+  labels:
+    app: banking-admin-core
+spec:
+  selector:
+    matchLabels:
+      app: banking-admin-core
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: banking-admin-core
+    spec:
+      containers:
+      - name: banking-admin-core
+        image: 960984616302.dkr.ecr.ap-east-1.amazonaws.com/banking-admin-core:1.0
+        ports:
+        - containerPort: 9010
+        command: ["/bin/sh","/start.sh","start","uat"]
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+        env:
+          - name: SPRING_DATASOURCE_URL
+            valueFrom:
+              secretKeyRef:
+                name: banking-secret
+                key: spring.datasource.url
+          - name: SPRING_DATASOURCE_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: banking-secret
+                key: spring.datasource.username
+          - name: SPRING_DATASOURCE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: banking-secret
+                key: spring.datasource.password
+          - name: SPRING_REDIS_HOST
+            valueFrom:
+              secretKeyRef:
+                name: banking-secret
+                key: spring.redis.host
+          - name: SPRING_REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: banking-secret
+                key: spring.redis.password
+          - name: S3_BUCKETNAME
+            valueFrom:
+              secretKeyRef:
+                name: banking-secret
+                key: S3.bucketName
+          - name: S3_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: banking-secret
+                key: S3.access_key_id
+          - name: S3_SECRET_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: banking-secret
+                key: S3.secret_key_id
+          - name: S3_REGION
+            valueFrom:
+              secretKeyRef:
+                name: banking-secret
+                key: S3.region
+        volumeMounts:
+        - name: volume-banking-admin-core
+          mountPath: /config
+        - name: volume-banking-admin-core-file
+          mountPath: /home/mount
+      volumes:
+      - name: volume-banking-admin-core
+        configMap:
+          name: banking-admin-core-configmap
+      - name: volume-banking-admin-core-file
+        hostPath:
+          path: /home/mount
+          type: DirectoryOrCreate
